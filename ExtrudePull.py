@@ -1,26 +1,10 @@
 import bpy
-import bmesh
-from math import degrees
-from mathutils import Vector, kdtree
-import mathutils
 from bpy_extras import view3d_utils
-from bpy.props import StringProperty
-import blf
-import bgl
-from math import sqrt
-import numpy as np
+from mathutils import Vector, kdtree
 from mathutils.geometry import intersect_line_plane
-import os
-from bpy.props import IntProperty, FloatProperty
 from mathutils.bvhtree import BVHTree
-from bpy.types import Operator
-from math import sin, cos, pi, radians
-from time import perf_counter
-from bpy.props import (
-	BoolProperty,
-	FloatProperty,
-	EnumProperty,
-)
+
+import numpy as np
 
 bl_info = {
 	"name": "Extrude Pull",
@@ -269,6 +253,7 @@ def ReturnStartPosition(self, context):
 
 
 def AxisMove(self, context, value):
+	axis = Vector()
 	if self.AxisMove == 'X':
 		axis = Vector((-1.0, 0.0, 0.0))
 	elif self.AxisMove == 'Y':
@@ -359,8 +344,8 @@ def Finish(self, context, BevelUpdate=False):
 	bpy.ops.mesh.remove_doubles(threshold=0.001, use_unselected=True)
 
 
-class DestuctiveExtrude(bpy.types.Operator):
-	bl_idname = "mesh.destuctive_extrude"
+class ExtrudePull(bpy.types.Operator):
+	bl_idname = "mesh.extrude_pull"
 	bl_label = "Extrude Pull"
 	bl_options = {"REGISTER", "UNDO", "GRAB_CURSOR", "BLOCKING"}
 	bl_description = "Extrude and remove unnecessary geometry."
@@ -447,7 +432,7 @@ class DestuctiveExtrude(bpy.types.Operator):
 			TransformObject(self, context)
 			CalculateNormal(self, context)
 			self.StartMouseLocation = GetMouseLocation(self, event, context)
-			print('StartMouseLocation', self.StartMouseLocation)
+			# print('StartMouseLocation', self.StartMouseLocation)
 
 			context.window_manager.modal_handler_add(self)
 			return {'RUNNING_MODAL'}
@@ -456,14 +441,14 @@ class DestuctiveExtrude(bpy.types.Operator):
 			return {'CANCELLED'}
 
 
-classes = (DestuctiveExtrude)
+classes = (ExtrudePull)
 
 
 def operator_draw(self, context):
 	layout = self.layout
 	col = layout.column(align=True)
 	self.layout.operator_context = 'INVOKE_REGION_WIN'
-	col.operator("mesh.destuctive_extrude", text="Extrude Pull")
+	col.operator("mesh.extrude_pull", text="Extrude Pull")
 
 
 def register():
