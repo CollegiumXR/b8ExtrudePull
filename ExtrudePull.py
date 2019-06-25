@@ -23,7 +23,7 @@ from bpy.props import (
 )
 
 bl_info = {
-	"name": "Better Extrude",
+	"name": "Extrude Pull",
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
 	"description": "Extrude and remove unnecessary geometry.",
 	"author": "Vladislav Kindushov, Martin Capitanio",
