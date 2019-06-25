@@ -16,3 +16,11 @@ Accessible in the Edit Mode using the key combination <b>'alt + e'</b><br>or the
 <br>
 
 ![Screenshot from 2019-06-25 11-47-35](https://user-images.githubusercontent.com/4047289/60088624-45b90d00-973f-11e9-8555-2ded79cc74dd.png)
+
+## Install
+
+* Download [ExtrudePull.py](https://raw.githubusercontent.com/capnm/B8ExtrudePull/master/ExtrudePull.py)
+* Open Blender Preferences.
+* Click on 'Install Add-on from File' button and cose this file.
+* Enable the plugin 'Mesh: Extrude Pull
+
