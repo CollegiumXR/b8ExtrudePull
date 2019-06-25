@@ -27,13 +27,13 @@ bl_info = {
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
 	"description": "Extrude and remove unnecessary geometry.",
 	"author": "Vladislav Kindushov, Martin Capitanio",
-	"version": (1, 0, 3),
+	"version": (1, 0, 4),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
 
 
-def CalcilateSnap(self, context, location, normal, index, object, matrix):
+def Snap(self, context, location, normal, index, object, matrix):
 	# Find nearest element for snap.
 	location = object.matrix_world @ location
 	BestLocation, tresh4, tresh5 = self.KDTreeSnap.find(location)
@@ -81,9 +81,7 @@ def RayCast(self, event, context):
 	)
 
 	if result:
-		value = CalcilateSnap(
-			self, context, location, normal, index, self.MainObject, matrix
-		)
+		value = Snap(self, context, location, normal, index, self.MainObject, matrix)
 		if value is None:
 			return GetMouseLocation(self, event, context) - self.StartMouseLocation
 		else:
@@ -223,7 +221,6 @@ def TransformObject(self, context):
 	bpy.ops.view3d.snap_cursor_to_selected()
 
 	bpy.context.scene.tool_settings.transform_pivot_point = 'CURSOR'
-	#bpy.ops.transform.resize(value=(1.000001, 1.000001, 1.000001))
 	self.ExtrudeObject.scale = Vector((1.001, 1.001, 1.001))
 
 	for i in selObj:
@@ -330,7 +327,6 @@ def Finish(self, context, BevelUpdate=False):
 	bpy.context.scene.tool_settings.transform_pivot_point = 'CURSOR'
 	bpy.ops.transform.resize(value=(1 - 0.001, 1 - 0.001, 1 - 0.001))
 	bpy.context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
-	#bpy.ops.mesh.select_all(action='DESELECT')
 
 	for f in self.MainObject.data.polygons:
 		f.select = False
@@ -361,9 +357,6 @@ def Finish(self, context, BevelUpdate=False):
 	GetVisualModifiers(self, context, True)
 	bpy.ops.object.mode_set(mode='EDIT')
 	bpy.ops.mesh.remove_doubles(threshold=0.001, use_unselected=True)
-	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
-	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
-	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
 
 
 class DestuctiveExtrude(bpy.types.Operator):
@@ -374,8 +367,9 @@ class DestuctiveExtrude(bpy.types.Operator):
 
 	@classmethod
 	def poll(cls, context):
-		if context.tool_settings.mesh_select_mode[2]:
-			# Require 'Face select' mode.
+		# Disable for Vertex and Edge select mode for now.
+		m = context.tool_settings.mesh_select_mode
+		if (m[0], m[1], m[2]) == (False, False, True):
 			return (context.mode == "EDIT_MESH")
 
 	def modal(self, context, event):
@@ -458,7 +452,7 @@ class DestuctiveExtrude(bpy.types.Operator):
 			context.window_manager.modal_handler_add(self)
 			return {'RUNNING_MODAL'}
 		else:
-			self.report({'WARNING'}, "Not invoked in 3dview.")
+			self.report({'WARNING'}, "The operator is not called in 3D Viewport.")
 			return {'CANCELLED'}
 
 
@@ -485,8 +479,8 @@ def unregister():
 if __name__ == "__main__":
 	register()
 """
-TODO: fix:
+TODO: fix
 	- nothing selected
-	- vertex, line crash
+	- all selected
 
 """

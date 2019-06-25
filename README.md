@@ -12,8 +12,11 @@ An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]]
 ![image](https://user-images.githubusercontent.com/4047289/60091072-0fca5780-9744-11e9-967f-76c949d8f753.png)
 
 ## Use
-
 Accessible in the Edit Mode using the key combination <b>'alt + e'</b><br>or the menu <b>'Mesh → Extrude → Extrude Pull'</b>.
+
+<br>
+
+Note that a Boolean modifier is applied in the background. Does not work (at the moment) when there is nothing to cut. Works only with selected **Faces** and lets you (at the moment) crash it, if you select something else.
 
 <br>
 
