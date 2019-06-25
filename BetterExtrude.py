@@ -23,26 +23,26 @@ from bpy.props import (
 )
 
 bl_info = {
-	"name": "Destructive Extrude :)",
-	"location": "View3D > Add > Mesh > Destructive Extrude,",
-	"description": "Extrude how SketchUp.",
-	"author": "Vladislav Kindushov",
-	"version": (1, 0, 1),
+	"name": "Better Extrude",
+	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
+	"description": "Extrude and remove unnecessary geometry.",
+	"author": "Vladislav Kindushov, Martin Capitanio",
+	"version": (1, 0, 2),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
 
 
 def CalcilateSnap(self, context, location, normal, index, object, matrix):
-	#______find nearest element for snap_____#
+	# Find nearest element for snap.
 	location = object.matrix_world @ location
 	BestLocation, tresh4, tresh5 = self.KDTreeSnap.find(location)
 
-	# ______find nearest derection_____#
+	# Find nearest direction.
 	tresh1, BestDirection, tresh2, tresh3 = self.BVHTree.find_nearest(BestLocation)
 	BestVertex, tresh4, tresh5 = self.KDTree.find(BestLocation)
 
-	# ______calculate_____#
+	# Calculate.
 	ToVertex = BestLocation
 	FromVertex = BestVertex
 
@@ -64,7 +64,7 @@ def RayCast(self, event, context):
 	region = context.region
 	rv3d = context.region_data
 	coord = event.mouse_region_x, event.mouse_region_y
-	# get the ray from the viewport and mouse
+	# Get the ray from the viewport and mouse.
 	view_vector = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord).normalized()
 	ray_origin = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
 	ray_target = ray_origin + (view_vector * 10000)
@@ -138,12 +138,12 @@ def CursorPosition(self, context, is_Set=False):
 
 
 def CreateNewObject(self, context):
-	# ________Duplicate Object________#
+	# Duplicate the object.
 	bpy.ops.mesh.duplicate_move()
 	bpy.ops.mesh.separate(type='SELECTED')
 	bpy.ops.object.mode_set(mode='OBJECT')
 	self.ExtrudeObject = context.selected_objects[-1]
-	# ________Clear Modifiers________#
+	# Clear modifiers.
 	while len(self.ExtrudeObject.modifiers) != 0:
 		self.ExtrudeObject.modifiers.remove(self.ExtrudeObject.modifiers[0])
 
@@ -177,13 +177,13 @@ def GetVisualModifiers(self, context, isSet=False):
 
 
 def CreateModifier(self, context):
-	#________Set Boolean________#
+	# Set Boolean.
 	context.view_layer.objects.active = self.MainObject
 	self.bool = context.object.modifiers.new('DestructiveBoolean', 'BOOLEAN')
 	bpy.context.object.modifiers["DestructiveBoolean"].operation = 'DIFFERENCE'
 	bpy.context.object.modifiers["DestructiveBoolean"].object = self.ExtrudeObject
 	bpy.context.object.modifiers["DestructiveBoolean"].show_viewport = True
-	# ________Set Solidify________#
+	# Set Solidify.
 	context.view_layer.objects.active = self.ExtrudeObject
 	context.object.modifiers.new('DestructiveSolidify', 'SOLIDIFY')
 	context.object.modifiers['DestructiveSolidify'].use_even_offset = True
@@ -284,7 +284,7 @@ def AxisMove(self, context, value):
 		self.ExtrudeObject.data.vertices[i].co = vertPos
 
 
-def Cansel(self, context):
+def Cancel(self, context):
 	bpy.data.objects.remove(self.ExtrudeObject)
 	context.view_layer.objects.active = self.MainObject
 	bpy.ops.object.modifier_remove(apply_as='DATA', modifier='DestructiveBoolean')
@@ -368,8 +368,9 @@ def Finish(self, context, BevelUpdate=False):
 
 class DestuctiveExtrude(bpy.types.Operator):
 	bl_idname = "mesh.destuctive_extrude"
-	bl_label = "Destructive Extrude"
+	bl_label = "Extrude Pull"
 	bl_options = {"REGISTER", "UNDO", "GRAB_CURSOR", "BLOCKING"}
+	bl_description = "Extrude and remove unnecessary geometry."
 
 	@classmethod
 	def poll(cls, context):
@@ -416,7 +417,7 @@ class DestuctiveExtrude(bpy.types.Operator):
 			return {'FINISHED'}
 
 		if event.type in {'RIGHTMOUSE', 'ESC'}:
-			Cansel(self, context)
+			Cancel(self, context)
 			return {'CANCELLED'}
 		return {'RUNNING_MODAL'}
 
@@ -438,7 +439,7 @@ class DestuctiveExtrude(bpy.types.Operator):
 			self.VisibilityModifiers = []
 			self.MainObject = context.active_object
 			self.ExtrudeObject = None
-			self.SaveSelectFaceForCansel = None
+			self.SaveSelectFaceForCancel = None
 
 			GetVisualModifiers(self, context)
 			GetVisualSetings(self, context)
@@ -455,7 +456,7 @@ class DestuctiveExtrude(bpy.types.Operator):
 			context.window_manager.modal_handler_add(self)
 			return {'RUNNING_MODAL'}
 		else:
-			self.report({'WARNING'}, "is't 3dview")
+			self.report({'WARNING'}, "Not invoked in 3dview.")
 			return {'CANCELLED'}
 
 
@@ -466,7 +467,7 @@ def operator_draw(self, context):
 	layout = self.layout
 	col = layout.column(align=True)
 	self.layout.operator_context = 'INVOKE_REGION_WIN'
-	col.operator("mesh.destuctive_extrude", text="Destructive Extrude")
+	col.operator("mesh.destuctive_extrude", text="Extrude Pull")
 
 
 def register():
@@ -481,3 +482,9 @@ def unregister():
 
 if __name__ == "__main__":
 	register()
+"""
+TODO: fix:
+	- nothing selected
+	- vertex, line crash
+
+"""
