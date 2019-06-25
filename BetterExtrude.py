@@ -126,10 +126,10 @@ def CreateBVHTree(self, context):
 
 def CursorPosition(self, context, is_Set=False):
 	if is_Set and self.CursorLocation != 'NONE':
-		context.scene.cursor_location = self.CursorLocation
+		context.scene.cursor.location = self.CursorLocation
 		bpy.context.scene.tool_settings.transform_pivot_point = self.PivotPoint
 	else:
-		self.CursorLocation = context.scene.cursor_location
+		self.CursorLocation = context.scene.cursor.location
 		self.PivotPoint = context.scene.tool_settings.transform_pivot_point
 
 
