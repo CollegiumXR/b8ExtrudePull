@@ -27,7 +27,7 @@ bl_info = {
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
 	"description": "Extrude and remove unnecessary geometry.",
 	"author": "Vladislav Kindushov, Martin Capitanio",
-	"version": (1, 0, 4),
+	"version": (1, 0, 5),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
@@ -284,7 +284,7 @@ def AxisMove(self, context, value):
 def Cancel(self, context):
 	bpy.data.objects.remove(self.ExtrudeObject)
 	context.view_layer.objects.active = self.MainObject
-	bpy.ops.object.modifier_remove(apply_as='DATA', modifier='DestructiveBoolean')
+	bpy.ops.object.modifier_remove(modifier='DestructiveBoolean')
 	GetVisualSetings(self, context, True)
 	GetVisualModifiers(self, context, True)
 	bpy.ops.object.mode_set(mode='EDIT')
