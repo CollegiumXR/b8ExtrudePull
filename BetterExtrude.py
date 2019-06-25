@@ -27,7 +27,7 @@ bl_info = {
 	"location": "View3D > Add > Mesh > Destructive Extrude,",
 	"description": "Extrude how SketchUp.",
 	"author": "Vladislav Kindushov",
-	"version": (1, 0, 0),
+	"version": (1, 0, 1),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
@@ -95,7 +95,11 @@ def RayCast(self, event, context):
 
 def CreateBVHTree(self, context):
 	bvh = BVHTree.FromObject(
-		self.ExtrudeObject, context.depsgraph, deform=False, cage=False, epsilon=0.0
+		self.ExtrudeObject,
+		context.evaluated_depsgraph_get(),
+		deform=False,
+		cage=False,
+		epsilon=0.0
 	)
 	self.BVHTree = bvh
 
@@ -302,7 +306,7 @@ def Finish(self, context, BevelUpdate=False):
 
 	context.view_layer.objects.active = self.MainObject
 	bpy.ops.object.modifier_apply(apply_as='DATA', modifier='DestructiveBoolean')
-	bpy.context.scene.update()
+	bpy.context.view_layer.update()
 	context.active_object.data.update()
 	context.active_object.data.update(calc_edges=False)
 	context.active_object.update_tag(refresh={'OBJECT', 'DATA', 'TIME'})
