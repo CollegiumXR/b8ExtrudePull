@@ -27,7 +27,7 @@ bl_info = {
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
 	"description": "Extrude and remove unnecessary geometry.",
 	"author": "Vladislav Kindushov, Martin Capitanio",
-	"version": (1, 0, 2),
+	"version": (1, 0, 3),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
@@ -374,7 +374,9 @@ class DestuctiveExtrude(bpy.types.Operator):
 
 	@classmethod
 	def poll(cls, context):
-		return (context.mode == "EDIT_MESH")
+		if context.tool_settings.mesh_select_mode[2]:
+			# Require 'Face select' mode.
+			return (context.mode == "EDIT_MESH")
 
 	def modal(self, context, event):
 		if event.type == 'MOUSEMOVE':
