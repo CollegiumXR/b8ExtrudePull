@@ -19,7 +19,8 @@ from time import perf_counter
 from bpy.props import (
 	BoolProperty,
 	FloatProperty,
-	EnumProperty, )
+	EnumProperty,
+)
 
 bl_info = {
 	"name": "Destructive Extrude :)",
@@ -32,13 +33,14 @@ bl_info = {
 }
 
 
-def CursorPosition(self,context, is_Set = False):
+def CursorPosition(self, context, is_Set=False):
 	if is_Set and self.CursorLocation != 'NONE':
 		context.scene.cursor_location = self.CursorLocation
 	else:
 		self.CursorLocation = context.scene.cursor_location
 
-def CreateNewObject(self,context):
+
+def CreateNewObject(self, context):
 	# ________Duplicate Object________#
 	bpy.ops.mesh.duplicate_move()
 	bpy.ops.mesh.separate(type='SELECTED')
@@ -48,7 +50,8 @@ def CreateNewObject(self,context):
 	while len(self.ExtrudeObject.modifiers) != 0:
 		self.ExtrudeObject.modifiers.remove(self.ExtrudeObject.modifiers[0])
 
-def GetVisualSetings(self,context, isSet=False):
+
+def GetVisualSetings(self, context, isSet=False):
 	if isSet:
 		context.active_object.show_all_edges = self.ShowAllEdges
 		context.active_object.show_wire = self.ShowAllEdges
@@ -56,13 +59,15 @@ def GetVisualSetings(self,context, isSet=False):
 		self.ShowAllEdges = context.active_object.show_all_edges
 		self.ShowAllEdges = context.active_object.show_wire
 
-def SetVisualSetings(self,context):
+
+def SetVisualSetings(self, context):
 	self.MainObject.show_all_edges = True
 	self.MainObject.show_wire = True
 
 	self.ExtrudeObject.display_type = 'WIRE'
 
-def GetVisualModifiers(self,context, isSet=False):
+
+def GetVisualModifiers(self, context, isSet=False):
 	if isSet:
 		for i in self.MainObject.modifiers:
 			if i.name in self.VisibilityModifiers:
@@ -73,7 +78,8 @@ def GetVisualModifiers(self,context, isSet=False):
 				self.VisibilityModifiers.append(i.name)
 				i.show_viewport = False
 
-def CreateModifier(self,context):
+
+def CreateModifier(self, context):
 	#________Set Boolean________#
 	context.view_layer.objects.active = self.MainObject
 	self.bool = context.object.modifiers.new('DestructiveBoolean', 'BOOLEAN')
@@ -86,6 +92,7 @@ def CreateModifier(self,context):
 	context.object.modifiers['DestructiveSolidify'].use_even_offset = True
 	context.object.modifiers['DestructiveSolidify'].offset = -0.99959
 
+
 def GetMouseLocation(self, event, context):
 	region = bpy.context.region
 	rv3d = bpy.context.region_data
@@ -93,19 +100,21 @@ def GetMouseLocation(self, event, context):
 	view_vector_mouse = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord)
 	ray_origin_mouse = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
 	V_a = ray_origin_mouse + view_vector_mouse
-	V_b = rv3d.view_rotation @ Vector((0.0,0.0,-1.0))
-	pointLoc = intersect_line_plane(ray_origin_mouse,V_a,
-									context.object.location,V_b )
+	V_b = rv3d.view_rotation @ Vector((0.0, 0.0, -1.0))
+	pointLoc = intersect_line_plane(ray_origin_mouse, V_a, context.object.location, V_b)
 
 	loc = (self.GeneralNormal @ pointLoc) * -1
 	return loc
 
-def SetSolidifyValue(self,context, value):
+
+def SetSolidifyValue(self, context, value):
 	self.ExtrudeObject.modifiers[-1].thickness = value
 
-def CalculateNormal(self,context):
+
+def CalculateNormal(self, context):
 	for i in self.ExtrudeObject.data.polygons:
 		self.GeneralNormal += i.normal.copy()
+
 
 def TransformObject(self, context):
 	selObj = context.selected_objects
@@ -124,13 +133,16 @@ def TransformObject(self, context):
 		i.select_set(True)
 	context.view_layer.objects.active = self.MainObject
 
-def GetFaceNormal(self,context):
+
+def GetFaceNormal(self, context):
 	for i in self.ExtrudeObject.data.polygons:
 		self.FaceNormal.append(i.normal.copy())
+
 
 def GetMainVertsIndex(self, context):
 	for i in self.ExtrudeObject.data.vertices:
 		self.MainVertsIndex.append(i.index)
+
 
 def SetForAxis(self, context):
 	GetMainVertsIndex(self, context)
@@ -142,20 +154,25 @@ def SetForAxis(self, context):
 		normal = f.normal
 		for v in f.vertices:
 			if v not in index:
-				self.ExtrudeObject.data.vertices[v].co = normal * 0.02 + self.ExtrudeObject.data.vertices[v].co.copy()
+				self.ExtrudeObject.data.vertices[
+					v
+				].co = normal * 0.02 + self.ExtrudeObject.data.vertices[v].co.copy()
 				index.append(v)
-
 
 	self.ExtrudeObject.modifiers[0].thickness = 0.00
 	self.ExtrudeObject.modifiers[0].offset = 0
-	bpy.ops.object.modifier_apply(apply_as = 'DATA', modifier = self.ExtrudeObject.modifiers[0].name)
+	bpy.ops.object.modifier_apply(
+		apply_as='DATA', modifier=self.ExtrudeObject.modifiers[0].name
+	)
 	for i in range(len(self.MainVertsIndex) - 1, len(self.ExtrudeObject.data.vertices)):
 		self.StartVertsPos.append(self.ExtrudeObject.data.vertices[i].co.copy())
 		context.view_layer.objects.active = self.MainObject
 
+
 def ReturnStartPosition(self, context):
 	for i in range(len(self.MainVertsIndex) - 1, len(self.ExtrudeObject.data.vertices)):
 		self.ExtrudeObject.data.vertices[i].co = self.StartVertsPos[i]
+
 
 def AxisMove(self, context, value):
 	if self.AxisMove == 'X':
@@ -169,6 +186,7 @@ def AxisMove(self, context, value):
 		vertPos = ((axis * value) + self.StartVertsPos[i])
 		self.ExtrudeObject.data.vertices[i].co = vertPos
 
+
 def Cansel(self, context):
 	bpy.data.objects.remove(self.ExtrudeObject)
 	context.view_layer.objects.active = self.MainObject
@@ -177,11 +195,14 @@ def Cansel(self, context):
 	GetVisualModifiers(self, context, True)
 	bpy.ops.object.mode_set(mode='EDIT')
 
+
 def Finish(self, context, BevelUpdate=False):
 	if self.NormalMove:
 		context.view_layer.objects.active = self.ExtrudeObject
 		GetMainVertsIndex(self, context)
-		bpy.ops.object.modifier_apply(apply_as='DATA', modifier=self.ExtrudeObject.modifiers[0].name)
+		bpy.ops.object.modifier_apply(
+			apply_as='DATA', modifier=self.ExtrudeObject.modifiers[0].name
+		)
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -205,17 +226,13 @@ def Finish(self, context, BevelUpdate=False):
 		else:
 			center = self.MainObject.matrix_world.inverted() @ f.center
 			normal = self.MainObject.matrix_world.inverted() @ f.normal
-			result, location, normal, index = self.MainObject.ray_cast(center,normal)
+			result, location, normal, index = self.MainObject.ray_cast(center, normal)
 			if result:
 				self.MainObject.data.polygons[index].select = True
 	bpy.data.objects.remove(self.ExtrudeObject)
 	GetVisualSetings(self, context, True)
 	GetVisualModifiers(self, context, True)
 	bpy.ops.object.mode_set(mode='EDIT')
-
-
-
-
 
 
 class DestuctiveExtrude(bpy.types.Operator):
@@ -231,10 +248,9 @@ class DestuctiveExtrude(bpy.types.Operator):
 		if event.type == 'MOUSEMOVE':
 			value = GetMouseLocation(self, event, context) - self.StartMouseLocation
 			if self.NormalMove:
-				SetSolidifyValue(self,context, value)
+				SetSolidifyValue(self, context, value)
 			else:
 				AxisMove(self, context, value)
-
 
 		if event.type == 'X':
 			if self.NormalMove:
@@ -266,34 +282,33 @@ class DestuctiveExtrude(bpy.types.Operator):
 			return {'CANCELLED'}
 		return {'RUNNING_MODAL'}
 
-	def invoke(self,context, event):
+	def invoke(self, context, event):
 		if context.space_data.type == 'VIEW_3D':
 			self.MainVertsIndex = []
 			self.AxisMove = 'Z'
 			self.StartVertsPos = []
 			self.NormalMove = True
-			self.GeneralNormal = Vector((0.0,0.0,0.0))
+			self.GeneralNormal = Vector((0.0, 0.0, 0.0))
 			self.FaceNormal = []
 			self.ShowAllEdges = None
 			self.ShowWire = None
 			self.CursorLocation = None
-			self.VisibilityModifiers=[]
+			self.VisibilityModifiers = []
 			self.MainObject = context.active_object
 			self.ExtrudeObject = None
 			self.SaveSelectFaceForCansel = None
 
 			#________For Axis Move________#
 
-
-			GetVisualModifiers(self,context)
-			GetVisualSetings(self,context)
-			CursorPosition(self,context)
-			CreateNewObject(self,context)
-			CreateModifier(self,context)
+			GetVisualModifiers(self, context)
+			GetVisualSetings(self, context)
+			CursorPosition(self, context)
+			CreateNewObject(self, context)
+			CreateModifier(self, context)
 			SetVisualSetings(self, context)
 			TransformObject(self, context)
-			CalculateNormal(self,context)
-			self.StartMouseLocation = GetMouseLocation(self,event, context)
+			CalculateNormal(self, context)
+			self.StartMouseLocation = GetMouseLocation(self, event, context)
 			print('StartMouseLocation', self.StartMouseLocation)
 
 			context.window_manager.modal_handler_add(self)
@@ -302,7 +317,9 @@ class DestuctiveExtrude(bpy.types.Operator):
 			self.report({'WARNING'}, "is't 3dview")
 			return {'CANCELLED'}
 
+
 classes = (DestuctiveExtrude)
+
 
 def register():
 	bpy.utils.register_class(classes)
