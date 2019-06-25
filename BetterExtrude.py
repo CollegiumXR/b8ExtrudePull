@@ -12,7 +12,7 @@ import numpy as np
 from mathutils.geometry import intersect_line_plane
 import os
 from bpy.props import IntProperty, FloatProperty
-
+from mathutils.bvhtree import BVHTree
 from bpy.types import Operator
 from math import sin, cos, pi, radians
 from time import perf_counter
@@ -33,11 +33,104 @@ bl_info = {
 }
 
 
+def CalcilateSnap(self, context, location, normal, index, object, matrix):
+	#______find nearest element for snap_____#
+	location = object.matrix_world @ location
+	BestLocation, tresh4, tresh5 = self.KDTreeSnap.find(location)
+
+	# ______find nearest derection_____#
+	tresh1, BestDirection, tresh2, tresh3 = self.BVHTree.find_nearest(BestLocation)
+	BestVertex, tresh4, tresh5 = self.KDTree.find(BestLocation)
+
+	# ______calculate_____#
+	ToVertex = BestLocation
+	FromVertex = BestVertex
+
+	dvec = ToVertex - BestDirection
+	dnormal = np.dot(dvec, BestDirection)
+
+	SnapPoint = FromVertex + Vector(dnormal * BestDirection)
+
+	SnapDistance = (FromVertex - SnapPoint).length
+
+	if self.NormalMove:
+		return SnapDistance
+	else:
+		return SnapPoint
+
+
+def RayCast(self, event, context):
+	scene = context.scene
+	region = context.region
+	rv3d = context.region_data
+	coord = event.mouse_region_x, event.mouse_region_y
+	# get the ray from the viewport and mouse
+	view_vector = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord).normalized()
+	ray_origin = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
+	ray_target = ray_origin + (view_vector * 10000)
+
+	matrix = self.MainObject.matrix_world
+	matrix_inv = matrix.inverted()
+	ray_origin_obj = matrix_inv @ ray_origin
+	ray_target_obj = matrix_inv @ ray_target
+	ray_direction_obj = ray_target_obj - ray_origin_obj
+	ray_direction_obj.normalize()
+
+	result, location, normal, index = self.MainObject.ray_cast(
+		ray_origin_obj, ray_direction_obj
+	)
+
+	if result:
+		value = CalcilateSnap(
+			self, context, location, normal, index, self.MainObject, matrix
+		)
+		if value is None:
+			return GetMouseLocation(self, event, context) - self.StartMouseLocation
+		else:
+			return value
+
+	else:
+		return GetMouseLocation(self, event, context) - self.StartMouseLocation
+
+
+def CreateBVHTree(self, context):
+	bvh = BVHTree.FromObject(
+		self.ExtrudeObject, context.depsgraph, deform=False, cage=False, epsilon=0.0
+	)
+	self.BVHTree = bvh
+
+	size = len(self.ExtrudeObject.data.vertices)
+	kd = kdtree.KDTree(size)
+	for i in self.ExtrudeObject.data.vertices:
+		kd.insert(self.ExtrudeObject.matrix_world @ i.co.copy(), i.index)
+	kd.balance()
+	self.KDTree = kd
+
+	size = len(self.MainObject.data.vertices)
+	size2 = len(self.MainObject.data.edges)
+	size3 = len(self.MainObject.data.polygons)
+	kd2 = kdtree.KDTree(size + size2 + size3)
+	for i in self.MainObject.data.vertices:
+		kd2.insert(self.MainObject.matrix_world @ i.co, i.index)
+	for i in self.MainObject.data.edges:
+		pos = (
+			self.MainObject.data.vertices[i.vertices[0]].co +
+			self.MainObject.data.vertices[i.vertices[1]].co
+		) / 2
+		kd2.insert(self.MainObject.matrix_world @ pos, i.index + size)
+	for i in self.MainObject.data.polygons:
+		kd2.insert(self.MainObject.matrix_world @ i.center, i.index + size + size2)
+	kd2.balance()
+	self.KDTreeSnap = kd2
+
+
 def CursorPosition(self, context, is_Set=False):
 	if is_Set and self.CursorLocation != 'NONE':
 		context.scene.cursor_location = self.CursorLocation
+		bpy.context.scene.tool_settings.transform_pivot_point = self.PivotPoint
 	else:
 		self.CursorLocation = context.scene.cursor_location
+		self.PivotPoint = context.scene.tool_settings.transform_pivot_point
 
 
 def CreateNewObject(self, context):
@@ -197,6 +290,7 @@ def Cansel(self, context):
 
 
 def Finish(self, context, BevelUpdate=False):
+	rayCastFace = []
 	if self.NormalMove:
 		context.view_layer.objects.active = self.ExtrudeObject
 		GetMainVertsIndex(self, context)
@@ -216,6 +310,28 @@ def Finish(self, context, BevelUpdate=False):
 	bpy.ops.object.mode_set(mode='OBJECT')
 
 	for f in self.ExtrudeObject.data.polygons:
+		faceCenter = self.ExtrudeObject.matrix_world @ f.center
+		faceNormal = self.ExtrudeObject.matrix_world @ f.normal
+		StartPoint = ((faceNormal * -1) * 0.003) + faceCenter
+
+		center = self.MainObject.matrix_world.inverted() @ StartPoint
+		normal = self.MainObject.matrix_world.inverted() @ faceNormal
+		result, location, normal, index = self.MainObject.ray_cast(
+			center, normal, distance=0.005
+		)
+		if result:
+			rayCastFace.append(index)
+			self.MainObject.data.polygons[index].select = True
+
+	bpy.context.scene.tool_settings.transform_pivot_point = 'CURSOR'
+	bpy.ops.transform.resize(value=(1 - 0.001, 1 - 0.001, 1 - 0.001))
+	bpy.context.scene.tool_settings.transform_pivot_point = 'MEDIAN_POINT'
+	#bpy.ops.mesh.select_all(action='DESELECT')
+
+	for f in self.MainObject.data.polygons:
+		f.select = False
+
+	for f in self.ExtrudeObject.data.polygons:
 		lose = False
 		for v in f.vertices:
 			if v in self.MainVertsIndex:
@@ -224,15 +340,26 @@ def Finish(self, context, BevelUpdate=False):
 		if lose:
 			continue
 		else:
-			center = self.MainObject.matrix_world.inverted() @ f.center
-			normal = self.MainObject.matrix_world.inverted() @ f.normal
-			result, location, normal, index = self.MainObject.ray_cast(center, normal)
+			faceCenter = self.ExtrudeObject.matrix_world @ f.center
+			faceNormal = self.ExtrudeObject.matrix_world @ f.normal
+			StartPoint = ((faceNormal * -1) * 0.003) + faceCenter
+
+			center = self.MainObject.matrix_world.inverted() @ StartPoint
+			normal = self.MainObject.matrix_world.inverted() @ faceNormal
+			result, location, normal, index = self.MainObject.ray_cast(
+				center, normal, distance=0.005
+			)
 			if result:
 				self.MainObject.data.polygons[index].select = True
+
 	bpy.data.objects.remove(self.ExtrudeObject)
 	GetVisualSetings(self, context, True)
 	GetVisualModifiers(self, context, True)
 	bpy.ops.object.mode_set(mode='EDIT')
+	bpy.ops.mesh.remove_doubles(threshold=0.001, use_unselected=True)
+	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
+	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
+	# bpy.ops.mesh.remove_doubles(threshold=1, use_unselected=True)
 
 
 class DestuctiveExtrude(bpy.types.Operator):
@@ -247,6 +374,13 @@ class DestuctiveExtrude(bpy.types.Operator):
 	def modal(self, context, event):
 		if event.type == 'MOUSEMOVE':
 			value = GetMouseLocation(self, event, context) - self.StartMouseLocation
+			if self.NormalMove:
+				SetSolidifyValue(self, context, value)
+			else:
+				AxisMove(self, context, value)
+
+		if event.ctrl:
+			value = RayCast(self, event, context)
 			if self.NormalMove:
 				SetSolidifyValue(self, context, value)
 			else:
@@ -284,6 +418,10 @@ class DestuctiveExtrude(bpy.types.Operator):
 
 	def invoke(self, context, event):
 		if context.space_data.type == 'VIEW_3D':
+			self.KDTreeSnap = None
+			self.KDTree = None
+			self.BVHTree = None
+			self.PivotPoint = None
 			self.MainVertsIndex = []
 			self.AxisMove = 'Z'
 			self.StartVertsPos = []
@@ -298,12 +436,11 @@ class DestuctiveExtrude(bpy.types.Operator):
 			self.ExtrudeObject = None
 			self.SaveSelectFaceForCansel = None
 
-			#________For Axis Move________#
-
 			GetVisualModifiers(self, context)
 			GetVisualSetings(self, context)
 			CursorPosition(self, context)
 			CreateNewObject(self, context)
+			CreateBVHTree(self, context)
 			CreateModifier(self, context)
 			SetVisualSetings(self, context)
 			TransformObject(self, context)
@@ -321,12 +458,21 @@ class DestuctiveExtrude(bpy.types.Operator):
 classes = (DestuctiveExtrude)
 
 
+def operator_draw(self, context):
+	layout = self.layout
+	col = layout.column(align=True)
+	self.layout.operator_context = 'INVOKE_REGION_WIN'
+	col.operator("mesh.destuctive_extrude", text="Destructive Extrude")
+
+
 def register():
 	bpy.utils.register_class(classes)
+	bpy.types.VIEW3D_MT_edit_mesh_extrude.append(operator_draw)
 
 
 def unregister():
 	bpy.utils.unregister_class(classes)
+	bpy.types.VIEW3D_MT_edit_mesh_extrude.remove(operator_draw)
 
 
 if __name__ == "__main__":
