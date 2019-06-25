@@ -14,9 +14,9 @@ An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]]
 ## Use
 Accessible in the 'Edit, Face select' mode using the key combination <b>'alt + e'</b><br>or the menu <b>'Mesh → Extrude → Extrude Pull'</b>.
 
-<br>
+Note that a 'boolean modifier' is applied in the background. It does (at the moment) nothing if there is nothing to cut and it obviously inherits all the boolean modifier issues.
 
-Note that a Boolean modifier is applied in the background. Does not work (at the moment) when there is nothing to cut. Works only with selected **Faces** and lets you (at the moment) crash it, if you select something else.
+Works only with selected **Faces**. The selection of vertices or edges is (currently) disabled to prevent a crash.
 
 <br>
 
