@@ -13,7 +13,7 @@ An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]]
 
 ## Use
 
-Accessible in the Edit Mode using the key combination <b>'alt + e'</b><br>or the menu <b>'Mesh → Extrude → Extrude Pull'</b>.
+Accessible in the Edit Mode (Face select) using the key combination <b>'alt + e'</b><br>or the menu <b>'Mesh → Extrude → Extrude Pull'</b>.
 
 <br>
 
