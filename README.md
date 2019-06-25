@@ -6,7 +6,7 @@ An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]]
 
 * Download [ExtrudePull.py](https://raw.githubusercontent.com/capnm/B8ExtrudePull/master/ExtrudePull.py)
 * Open Blender Preferences.
-* Click on 'Install Add-on from File' button and cose this file.
+* Click on 'Install add-on from file' and select this file.
 * Enable the plugin 'Mesh: Extrude Pull':
 
 ![image](https://user-images.githubusercontent.com/4047289/60091072-0fca5780-9744-11e9-967f-76c949d8f753.png)
