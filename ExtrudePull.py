@@ -355,7 +355,8 @@ class ExtrudePull(bpy.types.Operator):
 		# Disable for Vertex and Edge select mode for now.
 		m = context.tool_settings.mesh_select_mode
 		if (m[0], m[1], m[2]) == (False, False, True):
-			return (context.mode == "EDIT_MESH")
+			if context.active_object.data.count_selected_items()[2] > 0:
+				return (context.mode == "EDIT_MESH")
 
 	def modal(self, context, event):
 		if event.type == 'MOUSEMOVE':
@@ -463,9 +464,3 @@ def unregister():
 
 if __name__ == "__main__":
 	register()
-"""
-TODO: fix
-	- nothing selected
-	- all selected
-
-"""
