@@ -40,4 +40,4 @@ Report bugs and/or suggested solutions in the [Issues tab](https://github.com/ca
 ## Another non-paywalled alternatives
 
 The other way around, not exactly user-friendly, but with a full control over the shape of the Boolean Modifier:  
-<https://github.com/jayanam/fast-carve>
+<https://github.com/jayanam/fast-carve/tree/fast-carve-2-8>
