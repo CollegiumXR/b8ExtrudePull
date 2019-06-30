@@ -41,3 +41,7 @@ Report bugs and/or suggested solutions in the [Issues tab](https://github.com/ca
 
 The other way around, not exactly user-friendly, but with a full control over the shape of the Boolean Modifier:  
 <https://github.com/jayanam/fast-carve/tree/fast-carve-2-8>
+
+## Hall of Fame
+
+Thanks a lot to @Darcvizer for releasing the source code, which gives me an interesting starting point for developing Blender8 addons.
