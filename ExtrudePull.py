@@ -8,8 +8,8 @@ import numpy as np
 
 bl_info = {
 	"name": "Extrude Pull",
-	"location": "Edit Mode: Mesh > Extrude > Extrude Pull",
-	"description": "Extrude and remove unnecessary geometry.",
+	"location": "Edit Mode: Mesh > Extrude > Extrude Pull Geometry",
+	"description": "Extrude unwanted geometry away.",
 	"author": "Vladislav Kindushov, Martin Capitanio",
 	"version": (1, 0, 5),
 	"blender": (2, 80, 0),
@@ -26,15 +26,11 @@ def Snap(self, context, location, normal, index, object, matrix):
 	tresh1, BestDirection, tresh2, tresh3 = self.BVHTree.find_nearest(BestLocation)
 	BestVertex, tresh4, tresh5 = self.KDTree.find(BestLocation)
 
-	# Calculate.
 	ToVertex = BestLocation
 	FromVertex = BestVertex
-
 	dvec = ToVertex - BestDirection
 	dnormal = np.dot(dvec, BestDirection)
-
 	SnapPoint = FromVertex + Vector(dnormal * BestDirection)
-
 	SnapDistance = (FromVertex - SnapPoint).length
 
 	if self.NormalMove:
@@ -48,6 +44,7 @@ def RayCast(self, event, context):
 	region = context.region
 	rv3d = context.region_data
 	coord = event.mouse_region_x, event.mouse_region_y
+
 	# Get the ray from the viewport and mouse.
 	view_vector = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord).normalized()
 	ray_origin = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
@@ -70,7 +67,6 @@ def RayCast(self, event, context):
 			return GetMouseLocation(self, event, context) - self.StartMouseLocation
 		else:
 			return value
-
 	else:
 		return GetMouseLocation(self, event, context) - self.StartMouseLocation
 
@@ -84,11 +80,12 @@ def CreateBVHTree(self, context):
 		epsilon=0.0
 	)
 	self.BVHTree = bvh
-
 	size = len(self.ExtrudeObject.data.vertices)
 	kd = kdtree.KDTree(size)
+
 	for i in self.ExtrudeObject.data.vertices:
 		kd.insert(self.ExtrudeObject.matrix_world @ i.co.copy(), i.index)
+
 	kd.balance()
 	self.KDTree = kd
 
@@ -96,16 +93,20 @@ def CreateBVHTree(self, context):
 	size2 = len(self.MainObject.data.edges)
 	size3 = len(self.MainObject.data.polygons)
 	kd2 = kdtree.KDTree(size + size2 + size3)
+
 	for i in self.MainObject.data.vertices:
 		kd2.insert(self.MainObject.matrix_world @ i.co, i.index)
+
 	for i in self.MainObject.data.edges:
 		pos = (
 			self.MainObject.data.vertices[i.vertices[0]].co +
 			self.MainObject.data.vertices[i.vertices[1]].co
 		) / 2
 		kd2.insert(self.MainObject.matrix_world @ pos, i.index + size)
+
 	for i in self.MainObject.data.polygons:
 		kd2.insert(self.MainObject.matrix_world @ i.center, i.index + size + size2)
+
 	kd2.balance()
 	self.KDTreeSnap = kd2
 
@@ -125,6 +126,7 @@ def CreateNewObject(self, context):
 	bpy.ops.mesh.separate(type='SELECTED')
 	bpy.ops.object.mode_set(mode='OBJECT')
 	self.ExtrudeObject = context.selected_objects[-1]
+
 	# Clear modifiers.
 	while len(self.ExtrudeObject.modifiers) != 0:
 		self.ExtrudeObject.modifiers.remove(self.ExtrudeObject.modifiers[0])
@@ -181,7 +183,6 @@ def GetMouseLocation(self, event, context):
 	V_a = ray_origin_mouse + view_vector_mouse
 	V_b = rv3d.view_rotation @ Vector((0.0, 0.0, -1.0))
 	pointLoc = intersect_line_plane(ray_origin_mouse, V_a, context.object.location, V_b)
-
 	loc = (self.GeneralNormal @ pointLoc) * -1
 	return loc
 
@@ -346,17 +347,17 @@ def Finish(self, context, BevelUpdate=False):
 
 class ExtrudePull(bpy.types.Operator):
 	bl_idname = "mesh.extrude_pull"
-	bl_label = "Extrude Pull"
+	bl_label = "Extrude Pull Geometry"
 	bl_options = {"REGISTER", "UNDO", "GRAB_CURSOR", "BLOCKING"}
-	bl_description = "Extrude and remove unnecessary geometry."
+	bl_description = "Extrude unwanted geometry away."
 
 	@classmethod
 	def poll(cls, context):
-		# Disable for Vertex and Edge select mode for now.
-		m = context.tool_settings.mesh_select_mode
-		if (m[0], m[1], m[2]) == (False, False, True):
+		# Disable for Vertex and Edge select mode.
+		if tuple(bpy.context.tool_settings.mesh_select_mode) == (False, False, True):
 			if context.active_object.data.count_selected_items()[2] > 0:
 				return (context.mode == "EDIT_MESH")
+		return False
 
 	def modal(self, context, event):
 		if event.type == 'MOUSEMOVE':
@@ -449,7 +450,7 @@ def operator_draw(self, context):
 	layout = self.layout
 	col = layout.column(align=True)
 	self.layout.operator_context = 'INVOKE_REGION_WIN'
-	col.operator("mesh.extrude_pull", text="Extrude Pull")
+	col.operator("mesh.extrude_pull", text="Extrude Pull Geometry")
 
 
 def register():
