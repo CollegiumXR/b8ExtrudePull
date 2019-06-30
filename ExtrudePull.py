@@ -9,9 +9,9 @@ import numpy as np
 bl_info = {
 	"name": "Extrude Pull",
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull Geometry",
-	"description": "Extrude unwanted geometry away.",
+	"description": "Extrude unwanted geometry away",
 	"author": "Vladislav Kindushov, Martin Capitanio",
-	"version": (1, 0, 5),
+	"version": (1, 0, 6),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
@@ -349,7 +349,7 @@ class ExtrudePull(bpy.types.Operator):
 	bl_idname = "mesh.extrude_pull"
 	bl_label = "Extrude Pull Geometry"
 	bl_options = {"REGISTER", "UNDO", "GRAB_CURSOR", "BLOCKING"}
-	bl_description = "Extrude unwanted geometry away."
+	bl_description = "Extrude unwanted geometry away"
 
 	@classmethod
 	def poll(cls, context):

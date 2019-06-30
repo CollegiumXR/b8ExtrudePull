@@ -1,4 +1,4 @@
-# Blender 8xx Plugin for fast & dirty removal of unwanted geometry with the Extrude-Operator
+# Blender 8xx addon for fast & dirty removal of unwanted geometry with the Extrude-Operator
 
 An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]](https://blenderartists.org/t/destructive-extrude-beta/678275/278).
 
@@ -22,14 +22,14 @@ Note that a 'Boolean Modifier' is used and applied in the background. It (curren
 
 For best results, use the **normal** direction. The global x, y, z-direction currently attempts only a tricky and very inaccurate way to get the Boolean Modifier working. Fortunately, you can always hit the undo shortcut and try a different approach.  
 
-![Screenshot from 2019-06-25 11-46-59](https://user-images.githubusercontent.com/4047289/60088599-38038780-973f-11e9-86ca-c5b8ace3fe89.png)  
+![Screenshot from 2019-06-30 16-55-58](https://user-images.githubusercontent.com/4047289/60398425-113abc00-9b58-11e9-8276-dea44e8c2d21.png)  
 
 ![Screenshot from 2019-06-25 11-47-30](https://user-images.githubusercontent.com/4047289/60088611-3f2a9580-973f-11e9-8b1d-5fdb163c8170.png)  
 
 ![Screenshot from 2019-06-25 11-47-35](https://user-images.githubusercontent.com/4047289/60088624-45b90d00-973f-11e9-8555-2ded79cc74dd.png)  
 
 The operator does not currently reliably remove duplicate vertices; you must do this manually.  
-Note that the old "Remove Doubles" has been renamed to "Merge by Distance":
+Note that the old "Remove Doubles" has been renamed to **"Merge by Distance"**:
 
 ![Screenshot from 2019-06-30 10-23-03](https://user-images.githubusercontent.com/4047289/60394273-02d1ad80-9b22-11e9-9358-06060fa418ba.png)
 
