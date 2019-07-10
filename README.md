@@ -1,4 +1,4 @@
-# Blender 8xx addon for fast & dirty removal of unwanted geometry with the Extrude-Operator
+# Blender 2.8x extrude-operator addon for fast & dirty removal of object geometry
 
 An updated version of [Blender Artists Community / Destructive Extrude \[BETA\]](https://blenderartists.org/t/destructive-extrude-beta/678275/278).
 
@@ -18,7 +18,7 @@ or the menu **'Mesh → Extrude → Extrude Pull Geometry'**.
 
 It has been disabled in Vertex and Edge select modes to prevent the operator from crashing on some mixed up selections.
 
-Note that a 'Boolean Modifier' is used and applied in the background. It (currently) does weird things if there is nothing to cut and it obviously inherits all the Boolean Modifier issues.
+Note that a 'Boolean Modifier' is used and applied in the background. It (currently) does weird things if there is nothing to cut and it obviously inherits all the [Boolean Modifier issues](https://developer.blender.org/T47030).
 
 For best results, use the **normal** direction. The global x, y, z-direction currently attempts only a tricky and very inaccurate way to get the Boolean Modifier working. Fortunately, you can always hit the undo shortcut and try a different approach.  
 
