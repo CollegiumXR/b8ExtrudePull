@@ -33,15 +33,27 @@ Note that the old "Remove Doubles" has been renamed to **"Merge by Distance"**:
 
 ![Screenshot from 2019-06-30 10-23-03](https://user-images.githubusercontent.com/4047289/60394273-02d1ad80-9b22-11e9-9358-06060fa418ba.png)
 
+
+##  News
+
++ It would be now a waste of time trying to fix the issues on the Python side. Waiting until
+the [new boolean](https://developer.blender.org/diffusion/B/history/newboolean/) operator get
+merged in Blender 2.81.
+
++ [Roll Viewport:](https://github.com/capnm/b8RollViewport)  I've just committed another (at least for myself) useful Blender 2.8x addon.
+
+
+## Non-pay-walled alternatives
+
+[Fast Carve:](https://github.com/jayanam/fast-carve/tree/fast-carve-2-8) The other way around, not
+exactly user-friendly, but with a full control over the shape of the Boolean Modifier.
+
+
 ## Bugs
 
-Report bugs and/or suggested solutions in the [Issues tab](https://github.com/capnm/B8ExtrudePull/issues)
-
-## Another non-paywalled alternatives
-
-The other way around, not exactly user-friendly, but with a full control over the shape of the Boolean Modifier:  
-<https://github.com/jayanam/fast-carve/tree/fast-carve-2-8>
+Please report bugs and/or suggested solutions in the [issues tab](https://github.com/capnm/B8ExtrudePull/issues)
 
 ## Hall of Fame
 
-Thanks a lot to @Darcvizer for releasing the source code, which gives me an interesting starting point for developing Blender8 addons.
+Thanks a lot to @Darcvizer for releasing the source code, which gives me an interesting
+starting point for developing Blender 2.8x addons.
