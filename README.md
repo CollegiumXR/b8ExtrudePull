@@ -38,16 +38,17 @@ Note that the old "Remove Doubles" has been renamed to **"Merge by Distance"**:
 
 + It would be now a waste of time trying to fix the issues on the Python side. Waiting until
 the [new boolean](https://developer.blender.org/diffusion/B/history/newboolean/) operator get
-merged in Blender 2.81.
+merged in Blender 2.8?. Design task: https://developer.blender.org/T67744
 
-+ [Roll Viewport:](https://github.com/capnm/b8RollViewport)  I've just committed another (at least for myself) useful Blender 2.8x addon.
++ [Lock & Roll the 3D-Viewport:](https://capnm.github.io/b8RollViewport/)  I have decided to maintain another useful Blender 2.8x addon!
 
 
 ## Non-pay-walled alternatives
 
 [Fast Carve:](https://github.com/jayanam/fast-carve/tree/fast-carve-2-8) The other way around, not
-exactly user-friendly, but with a full control over the shape of the Boolean Modifier.
+exactly user-friendly, but with more control over the shape of the Boolean Modifier.
 
+'Destructive Extrude Operator' patch: https://developer.blender.org/D5336
 
 ## Bugs
 
@@ -55,5 +56,9 @@ Please report bugs and/or suggested solutions in the [issues tab](https://github
 
 ## Hall of Fame
 
-Thanks a lot to @Darcvizer for releasing the source code, which gives me an interesting
-starting point for developing Blender 2.8x addons.
+Vladislav Kindushov – Technically better working 2.7x version.
+
+https://blenderartists.org/u/theApe – Fixes for 2.80 API changes.
+
+https://blenderartists.org/t/destructive-extrude-beta/678275 – The think tank 8-)
+
