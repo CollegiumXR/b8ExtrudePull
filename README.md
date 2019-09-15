@@ -25,9 +25,15 @@ For best results, extrude in the normal direction. However, you can always use '
 
 ![Screenshot from 2019-06-25 11-47-35](https://user-images.githubusercontent.com/4047289/60088624-45b90d00-973f-11e9-8555-2ded79cc74dd.png)  
 
-The add-on does not currently reliably remove duplicate vertices and restore the object scale to 1.0; you should do this manually.
+The add-on does not currently
 
-Note that the old "Remove Doubles" has been renamed to ([alt]+[m]) **"Merge by Distance"**:
++ reliably remove duplicate vertices
++ restore the object location and scale
++ restore the 3D-cursor poosition
+
+you must do that manually.
+
+Note: The old "Remove Doubles" has been in v2.8x renamed to ([alt]+[m]) **Merge by Distance**:
 
 ![Screenshot from 2019-06-30 10-23-03](https://user-images.githubusercontent.com/4047289/60394273-02d1ad80-9b22-11e9-9358-06060fa418ba.png)
 
