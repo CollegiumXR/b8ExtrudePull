@@ -1,4 +1,4 @@
-# Blender 2.8x extrude operator add-on with fast (& currently dirty) removal of mesh geometry
+# [Blender 2.8x extrude operator add-on with fast (& currently dirty) removal of mesh geometry](https://capnm.github.io/b8ExtrudePull/)
 
 ## Install
 
@@ -19,21 +19,22 @@ Note that a 'Boolean Modifier' is used and applied in the background. Unfortunat
 
 For best results, extrude in the normal direction. However, you can always use 'Undo' ([Ctrl] + [z]) and choose a different approach.
 
+The add-on does not currently
+
++ reliably remove duplicate vertices
++ restore the object location and scale
++ restore the 3D-cursor location
+
+you must do that manually.
+
+Note: The old "Remove Doubles" has been in v2.8x renamed to ([alt]+[m]) **Merge by Distance**:
+
+
 ![Screenshot from 2019-06-30 16-55-58](https://user-images.githubusercontent.com/4047289/60398425-113abc00-9b58-11e9-8276-dea44e8c2d21.png)  
 
 ![Screenshot from 2019-06-25 11-47-30](https://user-images.githubusercontent.com/4047289/60088611-3f2a9580-973f-11e9-8b1d-5fdb163c8170.png)  
 
 ![Screenshot from 2019-06-25 11-47-35](https://user-images.githubusercontent.com/4047289/60088624-45b90d00-973f-11e9-8555-2ded79cc74dd.png)  
-
-The add-on does not currently
-
-+ reliably remove duplicate vertices
-+ restore the object location and scale
-+ restore the 3D-cursor poosition
-
-you must do that manually.
-
-Note: The old "Remove Doubles" has been in v2.8x renamed to ([alt]+[m]) **Merge by Distance**:
 
 ![Screenshot from 2019-06-30 10-23-03](https://user-images.githubusercontent.com/4047289/60394273-02d1ad80-9b22-11e9-9358-06060fa418ba.png)
 
