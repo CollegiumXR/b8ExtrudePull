@@ -1,3 +1,24 @@
+"""
+	Copyright (C) 2018 Vladislav Kindushov, Blender 2.7x Version
+		https://github.com/Darcvizer/Destructive-Extrude
+		
+	Copyright (C) 2019-2119 Martin Capitanio <capnm@capitanio.org>.
+	All Rights Reserved.
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import bpy
 from bpy_extras import view3d_utils
 from mathutils import Vector, kdtree
@@ -11,7 +32,7 @@ bl_info = {
 	"location": "Edit Mode: Mesh > Extrude > Extrude Pull Geometry",
 	"description": "Extrude unwanted geometry away",
 	"author": "Vladislav Kindushov, Martin Capitanio",
-	"version": (1, 0, 6),
+	"version": (1, 0, 7),
 	"blender": (2, 80, 0),
 	"category": "Mesh",
 }
@@ -349,15 +370,53 @@ class ExtrudePull(bpy.types.Operator):
 	bl_idname = "mesh.extrude_pull"
 	bl_label = "Extrude Pull Geometry"
 	bl_options = {"REGISTER", "UNDO", "GRAB_CURSOR", "BLOCKING"}
-	bl_description = "Extrude unwanted geometry away"
+	bl_description = "Extrude with a geometry removal"
 
 	@classmethod
 	def poll(cls, context):
-		# Disable for Vertex and Edge select mode.
+		# Disable for Vertex and Edge select mode (add-on crash).
 		if tuple(bpy.context.tool_settings.mesh_select_mode) == (False, False, True):
 			if context.active_object.data.count_selected_items()[2] > 0:
 				return (context.mode == "EDIT_MESH")
 		return False
+
+	def invoke(self, context, event):
+		if context.space_data.type != 'VIEW_3D':
+			self.report({'WARNING'}, "The operator is not called in 3D Viewport.")
+			return {'CANCELLED'}
+
+		self.KDTreeSnap = None
+		self.KDTree = None
+		self.BVHTree = None
+		self.PivotPoint = None
+		self.MainVertsIndex = []
+		self.AxisMove = 'Z'
+		self.StartVertsPos = []
+		self.NormalMove = True
+		self.GeneralNormal = Vector((0.0, 0.0, 0.0))
+		self.FaceNormal = []
+		self.ShowAllEdges = None
+		self.ShowWire = None
+		self.CursorLocation = None
+		self.VisibilityModifiers = []
+		self.MainObject = context.active_object
+		self.ExtrudeObject = None
+		self.SaveSelectFaceForCancel = None
+
+		GetVisualModifiers(self, context)
+		GetVisualSetings(self, context)
+		CursorPosition(self, context)
+		CreateNewObject(self, context)
+		CreateBVHTree(self, context)
+		CreateModifier(self, context)
+		SetVisualSetings(self, context)
+		TransformObject(self, context)
+		CalculateNormal(self, context)
+		self.StartMouseLocation = GetMouseLocation(self, event, context)
+		# print('StartMouseLocation', self.StartMouseLocation)
+
+		context.window_manager.modal_handler_add(self)
+		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
 		if event.type == 'MOUSEMOVE':
@@ -404,46 +463,10 @@ class ExtrudePull(bpy.types.Operator):
 			return {'CANCELLED'}
 		return {'RUNNING_MODAL'}
 
-	def invoke(self, context, event):
-		if context.space_data.type == 'VIEW_3D':
-			self.KDTreeSnap = None
-			self.KDTree = None
-			self.BVHTree = None
-			self.PivotPoint = None
-			self.MainVertsIndex = []
-			self.AxisMove = 'Z'
-			self.StartVertsPos = []
-			self.NormalMove = True
-			self.GeneralNormal = Vector((0.0, 0.0, 0.0))
-			self.FaceNormal = []
-			self.ShowAllEdges = None
-			self.ShowWire = None
-			self.CursorLocation = None
-			self.VisibilityModifiers = []
-			self.MainObject = context.active_object
-			self.ExtrudeObject = None
-			self.SaveSelectFaceForCancel = None
 
-			GetVisualModifiers(self, context)
-			GetVisualSetings(self, context)
-			CursorPosition(self, context)
-			CreateNewObject(self, context)
-			CreateBVHTree(self, context)
-			CreateModifier(self, context)
-			SetVisualSetings(self, context)
-			TransformObject(self, context)
-			CalculateNormal(self, context)
-			self.StartMouseLocation = GetMouseLocation(self, event, context)
-			# print('StartMouseLocation', self.StartMouseLocation)
+addon_classes = (ExtrudePull, )
 
-			context.window_manager.modal_handler_add(self)
-			return {'RUNNING_MODAL'}
-		else:
-			self.report({'WARNING'}, "The operator is not called in 3D Viewport.")
-			return {'CANCELLED'}
-
-
-classes = (ExtrudePull)
+addon_classes_reg, addon_classes_unreg = bpy.utils.register_classes_factory(addon_classes)
 
 
 def operator_draw(self, context):
@@ -454,13 +477,13 @@ def operator_draw(self, context):
 
 
 def register():
-	bpy.utils.register_class(classes)
+	addon_classes_reg()
 	bpy.types.VIEW3D_MT_edit_mesh_extrude.append(operator_draw)
 
 
 def unregister():
-	bpy.utils.unregister_class(classes)
 	bpy.types.VIEW3D_MT_edit_mesh_extrude.remove(operator_draw)
+	addon_classes_unreg()
 
 
 if __name__ == "__main__":
